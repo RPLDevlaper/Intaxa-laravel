@@ -67,6 +67,11 @@ class User extends Authenticatable
         return $this->hasMany(RequestPublisher::class, 'user_id');
     }
 
+    public function Task()
+    {
+        return $this->belongsToMany(Task::class);
+    }
+
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);

@@ -11,7 +11,7 @@ class RequestPublisher extends Model
 
     public function User()
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function Publisher()

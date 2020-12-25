@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -22,6 +23,18 @@ class UserController extends Controller
     {
         $this->dimen = 500;
         $this->path = public_path().'/images/user/avatar';
+    }
+
+    public function setPassword(Request $request)
+    {
+        $user = User::find(Auth::id());
+        if(Hash::check($request->oldPassword, $user->password)) {
+            $user->password = $request->newPassword;
+            $user->save();
+            return $this->onSuccess('User', $user, 'Updated Password');
+        } else {
+            return $this->onSuccess('User', null);
+        }
     }
 
     public function signin(Request $request)

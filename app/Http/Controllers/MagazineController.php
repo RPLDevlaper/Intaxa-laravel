@@ -106,7 +106,7 @@ class MagazineController extends Controller
             $magz = Magazine::whereNull('deleted_at')->orderBy('id', 'ASC')->get();
         }
         if($sort == 'Popular') {
-            $magz = Magazine::get();
+            $magz = Magazine::whereNull('deleted_at')->get();
             $magz = $magz->sortByDesc(function($mag) {
                 return $mag->rating->sum('rating');
             });

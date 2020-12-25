@@ -4,8 +4,10 @@ use App\Http\Controllers\CategoryMagazineController;
 use App\Http\Controllers\CategoryTopicController;
 use App\Http\Controllers\MagazineController;
 use App\Http\Controllers\PublisherController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UserController;
+use App\Models\Publisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +30,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['middleware' => ['auth:api', 'cors']], function () {
     Route::get('user/profile', [UserController::class, 'showAuth']);
     Route::post('user/{id}', [UserController::class, 'update']);
-
+    Route::post('user/profile/password', [UserController::class, 'setPassword']);
+    Route::resource('task', TaskController::class);
+    Route::post('stats/task/{id}', [TaskController::class, 'setStatus']);
     Route::post('publisher', [PublisherController::class, 'store']);
     Route::post('publisher/{id}', [PublisherController::class, 'update']);
     Route::post('publisher/upload/{id}', [PublisherController::class, 'upload']);
@@ -38,6 +42,11 @@ Route::group(['middleware' => ['auth:api', 'cors']], function () {
     Route::post('user/magazine/{id}/rating', [MagazineController::class, 'ratingMagazine']);
     Route::delete('magazine/{id}/delete/rating', [MagazineController::class, 'daleteRating']);
     Route::get('publisher/teammate', [PublisherController::class, 'getTeammate']);
+    Route::get('publisher/pending', [PublisherController::class, 'getPending']);
+    Route::post('req/reject/publisher', [PublisherController::class, 'reject']);
+    Route::post('req/accept/publisher', [PublisherController::class, 'accept']);
+    Route::post('permission/publisher', [PublisherController::class, 'setPermission']);
+    Route::get('kick/user/{id}', [PublisherController::class, 'kick']);
 });
 
 Route::group(['middleware' => ['cors']], function() {
@@ -56,7 +65,6 @@ Route::group(['middleware' => ['cors']], function() {
     Route::delete('magazine/{id}/delete', [MagazineController::class, 'softDestroy']);
     Route::post('q/magazine', [MagazineController::class, 'search']);
     Route::post('q/magazine/{id}/topic', [MagazineController::class, 'searchTopic']);
-    Route::post('download/magazine/{id}', [MagazineController::class, 'downloadAssets']);
     Route::get('deleted/magazine', [MagazineController::class, 'deleted']);
     Route::get('recover/magazine/{id}', [MagazineController::class, 'recover']);
     Route::get('popular/magazine', [MagazineController::class, 'mostPopular']);
@@ -68,5 +76,6 @@ Route::group(['middleware' => ['cors']], function() {
     Route::delete('topic/{id}/delete', [TopicController::class, 'softDestroy']);
     Route::delete('/file/topic/{id}/delete', [TopicController::class, 'deleteFiles']);
     Route::post('topic/q', [TopicController::class, 'search']);
+    Route::post('download/magazine/{id}', [MagazineController::class, 'downloadAssets']);
 
 });

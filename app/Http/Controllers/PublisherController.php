@@ -143,6 +143,48 @@ class PublisherController extends Controller
         return $this->onSuccess('Publisher', $teammate, 'Founded');
     }
 
+    public function getPending()
+    {
+        $user = User::find(Auth::id());
+        $req = RequestPublisher::with('User')->where('publisher_id', $user->publisher_id)->where('status', 'Pending')->get();
+        return $this->onSuccess('Publisher', $req, 'Founded');
+    }
+
+    public function reject(Request $request)
+    {
+        $req = RequestPublisher::where('user_id', $request->userId)->where('publisher_id', $request->publisherId)->where('status', 'Pending')->first();
+        $req->delete();
+        return $this->onSuccess('Publisher', $req, 'Rejected');
+    }
+
+    public function setPermission(Request $request)
+    {
+        $user = User::find($request->userId);
+        $user->level = $request->permission;
+        $user->save();
+        return $this->onSuccess('User', $user, 'Changed');
+    }
+
+    public function kick($id)
+    {
+        $user = User::find($id);
+        $user->level = 'User';
+        $user->publisher_id = null;
+        $user->save();
+        $this->onSuccess('User', $user, 'Kicked');
+    }
+
+    public function accept(Request $request)
+    {
+        $req = RequestPublisher::where('user_id', $request->userId)->where('publisher_id', $request->publisherId)->where('status', 'Pending')->first();
+        $req->delete();
+        $user = User::find($request->userId);
+        $user->level = 'Member';
+        $user->publisher_id = $request->publisherId;
+        $user->save();
+        return $this->onSuccess('Publisher', $req, 'Accepted');
+    }
+
     /**
      * Display the specified resource.
      *
@@ -177,14 +219,15 @@ class PublisherController extends Controller
         try {
             $user = User::find(Auth::id());
             if($user->publisher_id != $id) {
-                return $this->onSuccess('Publisher', null, 'Bukan milik anda');
+                return $this->onSuccess('Publisher', [$user->publisher_id, $id], 'Bukan milik anda');
+            } else {
+                $publisher = Publisher::find($id);
+                $publisher->name = $request->name;
+                $publisher->category = $request->category;
+                $publisher->description = $request->description;
+                $publisher->save();
+                return $this->onSuccess('Publisher', $publisher, 'Publisher Updated');
             }
-            $publisher = Publisher::find($id);
-            $publisher->name = $request->name;
-            $publisher->category = $request->category;
-            $publisher->description = $request->description;
-            $publisher->save();
-            return $this->onSuccess('Publisher', $publisher, 'Publisher Updated');
         } catch (\Exception $e) {
             return $this->onError($e);
         }
